@@ -59,6 +59,8 @@ func write(id string, msgCount int, wg *sync.WaitGroup) {
 			Key:   []byte(id),
 			Value: []byte(fmt.Sprintf("message-%s-%d", id, i)),
 		})
-		fmt.Printf("Time taken per write message | Writer: %s | Duration: %d \n", id, time.Now().Sub(tStart))
+
+		duration := time.Now().Sub(tStart)
+		fmt.Printf("Time taken per write message | Writer: %s | Duration: %d \n", id, duration.String())
 	}
 }
