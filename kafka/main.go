@@ -61,6 +61,6 @@ func write(id string, msgCount int, wg *sync.WaitGroup) {
 		})
 
 		duration := time.Now().Sub(tStart)
-		fmt.Printf("Time taken per write message | Writer: %s | Duration: %d \n", id, duration.String())
+		fmt.Printf("Time taken per write message | Writer: %s | Duration: %s \n", id, duration.String())
 	}
 }
