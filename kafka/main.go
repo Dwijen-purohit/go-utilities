@@ -5,13 +5,14 @@ import (
 	"flag"
 	"fmt"
 	"strings"
-
-	kg "github.com/segmentio/kafka-go"
 	"sync"
 	"time"
+
+	kg "github.com/segmentio/kafka-go"
 )
 
 var (
+	ack          *int
 	concurrency  *int
 	messageCount *int
 	topic        *string
@@ -20,6 +21,7 @@ var (
 )
 
 func init() {
+	ack = flag.Int("ack", -1, "required acknowledgement default is -1")
 	concurrency = flag.Int("concurrency", 4, "number of concurrent requests")
 	messageCount = flag.Int("message-count", 100, "number of messages")
 	topic = flag.String("topic", "", "topic to test")
@@ -48,8 +50,9 @@ func write(id string, msgCount int, wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	w := kg.NewWriter(kg.WriterConfig{
-		Brokers: brokerIPs,
-		Topic:   *topic,
+		Brokers:      brokerIPs,
+		Topic:        *topic,
+		RequiredAcks: *ack,
 	})
 	defer w.Close()
 
