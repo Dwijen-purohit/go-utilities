@@ -57,8 +57,9 @@ func write(id string, msgCount int, wg *sync.WaitGroup) {
 	})
 	defer w.Close()
 
+	group := []kg.Message{}
+
 	for i := 0; i < msgCount; i++ {
-		group := []kg.Message{}
 		if len(group) < *batchSize {
 			group = append(group, kg.Message{
 				Key:   []byte(id),
