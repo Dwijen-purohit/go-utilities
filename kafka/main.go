@@ -5,7 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"strings"
-	"sync"
+	"time"
 
 	kg "github.com/segmentio/kafka-go"
 )
@@ -36,20 +36,10 @@ func init() {
 func main() {
 	fmt.Printf("Opts = concurrency: %d | message-count: %d | topic: %s | brokers: %s \n", *concurrency, *messageCount, *topic, *brokers)
 
-	msgPerWriter := *messageCount / *concurrency
-	wg := sync.WaitGroup{}
-
-	for i := 0; i < *concurrency; i++ {
-		wg.Add(1)
-		go write(fmt.Sprintf("writer-%d", i), msgPerWriter, &wg)
-	}
-
-	wg.Wait()
+	write(fmt.Sprintf("writer-%d", i), 10)
 }
 
-func write(id string, msgCount int, wg *sync.WaitGroup) {
-	defer wg.Done()
-
+func write(id string, msgCount int) {
 	w := kg.NewWriter(kg.WriterConfig{
 		Brokers:      brokerIPs,
 		Topic:        *topic,
@@ -57,26 +47,16 @@ func write(id string, msgCount int, wg *sync.WaitGroup) {
 	})
 	defer w.Close()
 
-	group := []kg.Message{}
-
 	for i := 0; i < msgCount; i++ {
-		if len(group) < *batchSize {
-			group = append(group, kg.Message{
-				Key:   []byte(id),
-				Value: []byte(fmt.Sprintf("message-%s-%d", id, i)),
-			})
+		st := time.Now()
 
-			continue
-		}
-
-		err := w.WriteMessages(context.Background(), group...)
+		err := w.WriteMessages(context.Background(), kg.Message{
+			Key:   []byte(id),
+			Value: []byte(fmt.Sprintf("message-%s-%d", id, i)),
+		})
+		et := time.Since(st).Seconds()
 		if err != nil {
 			fmt.Println("Err - - - -", err)
 		}
-
-		stats := w.Stats()
-		fmt.Printf("DialTime: %v | WriteTime: %v | WaitTime: %v | Writer: %s \n", stats.DialTime.Avg.String(), stats.WriteTime.Avg.String(), stats.WaitTime.Avg.String(), id)
-
-		group = []kg.Message{}
 	}
 }
