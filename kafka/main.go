@@ -51,6 +51,7 @@ func write2() {
 	// .Events channel is used.
 	deliveryChan := make(chan kafka.Event)
 
+	value := "Hello world"
 	err = p.Produce(&kafka.Message{
 		TopicPartition: kafka.TopicPartition{Topic: topic, Partition: kafka.PartitionAny},
 		Value:          []byte(value),
