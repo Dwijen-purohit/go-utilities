@@ -22,7 +22,7 @@ var (
 
 func init() {
 	ack = flag.Int("ack", -1, "required acknowledgement default is -1")
-	batchSize = flag.Int("batch-size", 1, "required acknowledgement default is -1")
+	batchSize = flag.Int("batch-size", 1, "default batchSize is 1")
 	concurrency = flag.Int("concurrency", 4, "number of concurrent requests")
 	messageCount = flag.Int("message-count", 100, "number of messages")
 	topic = flag.String("topic", "", "topic to test")
@@ -75,5 +75,7 @@ func write(id string, msgCount int, wg *sync.WaitGroup) {
 
 		stats := w.Stats()
 		fmt.Printf("DialTime: %v | WriteTime: %v | WaitTime: %v | Writer: %s \n", stats.DialTime.Avg.String(), stats.WriteTime.Avg.String(), stats.WaitTime.Avg.String(), id)
+
+		group = []kg.Message{}
 	}
 }
