@@ -4,7 +4,6 @@ import (
 	"flag"
 	"fmt"
 	"strings"
-	"sync"
 
 	// kg "github.com/segmentio/kafka-go"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
@@ -35,21 +34,10 @@ func init() {
 
 func main() {
 	fmt.Printf("Opts = concurrency: %d | message-count: %d | topic: %s | brokers: %s \n", *concurrency, *messageCount, *topic, *brokers)
-
-	msgPerWriter := *messageCount / *concurrency
-	wg := sync.WaitGroup{}
-
-	for i := 0; i < *concurrency; i++ {
-		wg.Add(1)
-		go write(fmt.Sprintf("writer-%d", i), msgPerWriter, &wg)
-	}
-
-	wg.Wait()
+	write2()
 }
 
-func write2(id string, msgCount int, wg *sync.WaitGroup) {
-	defer wg.Done()
-
+func write2() {
 	p, err := kafka.NewProducer(&kafka.ConfigMap{"bootstrap.servers": *brokers})
 
 	if err != nil {
