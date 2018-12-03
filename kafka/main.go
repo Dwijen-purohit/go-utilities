@@ -58,5 +58,7 @@ func write(id string, msgCount int) {
 		if err != nil {
 			fmt.Println("Err - - - -", err)
 		}
+
+		fmt.Printf("Time taken - %+v", et)
 	}
 }
