@@ -66,7 +66,6 @@ func write(id string, msgCount int, wg *sync.WaitGroup) {
 				Value: []byte(fmt.Sprintf("message-%s-%d", id, i)),
 			})
 
-			fmt.Println("Group Size", len(group), id)
 			continue
 		}
 
