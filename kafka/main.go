@@ -1,13 +1,13 @@
 package main
 
 import (
-	"context"
 	"flag"
 	"fmt"
 	"strings"
 	"sync"
 
-	kg "github.com/segmentio/kafka-go"
+	// kg "github.com/segmentio/kafka-go"
+	"github.com/confluentinc/confluent-kafka-go/kafka"
 )
 
 var (
@@ -47,36 +47,78 @@ func main() {
 	wg.Wait()
 }
 
-func write(id string, msgCount int, wg *sync.WaitGroup) {
+func write2(id string, msgCount int, wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	w := kg.NewWriter(kg.WriterConfig{
-		Brokers:      brokerIPs,
-		Topic:        *topic,
-		RequiredAcks: *ack,
-	})
-	defer w.Close()
+	p, err := kafka.NewProducer(&kafka.ConfigMap{"bootstrap.servers": *brokers})
 
-	group := []kg.Message{}
-
-	for i := 0; i < msgCount; i++ {
-		if len(group) < *batchSize {
-			group = append(group, kg.Message{
-				Key:   []byte(id),
-				Value: []byte(fmt.Sprintf("message-%s-%d", id, i)),
-			})
-
-			continue
-		}
-
-		err := w.WriteMessages(context.Background(), group...)
-		if err != nil {
-			fmt.Println("Err - - - -", err)
-		}
-
-		stats := w.Stats()
-		fmt.Printf("DialTime: %v | WriteTime: %v | WaitTime: %v | Writer: %s \n", stats.DialTime.Avg.String(), stats.WriteTime.Avg.String(), stats.WaitTime.Avg.String(), id)
-
-		group = []kg.Message{}
+	if err != nil {
+		fmt.Printf("Failed to create producer: %s\n", err)
+		return
 	}
+
+	fmt.Printf("Created Producer %v\n", p)
+
+	// Optional delivery channel, if not specified the Producer object's
+	// .Events channel is used.
+	deliveryChan := make(chan kafka.Event)
+
+	err = p.Produce(&kafka.Message{
+		TopicPartition: kafka.TopicPartition{Topic: topic, Partition: kafka.PartitionAny},
+		Value:          []byte(value),
+		Headers:        []kafka.Header{{Key: "myTestHeader", Value: []byte("header values are binary")}},
+	}, deliveryChan)
+
+	e := <-deliveryChan
+	m := e.(*kafka.Message)
+
+	if m.TopicPartition.Error != nil {
+		fmt.Printf("Delivery failed: %v\n", m.TopicPartition.Error)
+	} else {
+		fmt.Printf("Delivered message to topic %s [%d] at offset %v\n",
+			*m.TopicPartition.Topic, m.TopicPartition.Partition, m.TopicPartition.Offset)
+	}
+
+	meta, err := p.GetMetadata(topic)
+	if err != nil {
+		fmt.Printf("META ERR - %+v", err)
+	}
+
+	fmt.Printf("METADATA - %+v", meta)
+
+	close(deliveryChan)
 }
+
+// func write(id string, msgCount int, wg *sync.WaitGroup) {
+// 	defer wg.Done()
+//
+// 	w := kg.NewWriter(kg.WriterConfig{
+// 		Brokers:      brokerIPs,
+// 		Topic:        *topic,
+// 		RequiredAcks: *ack,
+// 	})
+// 	defer w.Close()
+//
+// 	group := []kg.Message{}
+//
+// 	for i := 0; i < msgCount; i++ {
+// 		if len(group) < *batchSize {
+// 			group = append(group, kg.Message{
+// 				Key:   []byte(id),
+// 				Value: []byte(fmt.Sprintf("message-%s-%d", id, i)),
+// 			})
+//
+// 			continue
+// 		}
+//
+// 		err := w.WriteMessages(context.Background(), group...)
+// 		if err != nil {
+// 			fmt.Println("Err - - - -", err)
+// 		}
+//
+// 		stats := w.Stats()
+// 		fmt.Printf("DialTime: %v | WriteTime: %v | WaitTime: %v | Writer: %s \n", stats.DialTime.Avg.String(), stats.WriteTime.Avg.String(), stats.WaitTime.Avg.String(), id)
+//
+// 		group = []kg.Message{}
+// 	}
+// }
