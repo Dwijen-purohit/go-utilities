@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"strings"
 	"sync"
-	"time"
 
 	kg "github.com/segmentio/kafka-go"
 )
@@ -57,7 +56,7 @@ func write(id string, msgCount int, wg *sync.WaitGroup) {
 	defer w.Close()
 
 	for i := 0; i < msgCount; i++ {
-		tStart := time.Now()
+		//		tStart := time.Now()
 		err := w.WriteMessages(context.Background(), kg.Message{
 			Key:   []byte(id),
 			Value: []byte(fmt.Sprintf("message-%s-%d", id, i)),
