@@ -36,7 +36,7 @@ func init() {
 func main() {
 	fmt.Printf("Opts = concurrency: %d | message-count: %d | topic: %s | brokers: %s \n", *concurrency, *messageCount, *topic, *brokers)
 
-	write(fmt.Sprintf("writer-%d", i), 10)
+	write(fmt.Sprintf("writer-%d", 1), 10)
 }
 
 func write(id string, msgCount int) {
