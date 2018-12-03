@@ -2,16 +2,16 @@
 
 
 [[projects]]
-  digest = "1:cf146c47a17ab808244139e4dd59c67e441c2696c4c26a2e29909f02d8c533ae"
-  name = "github.com/segmentio/kafka-go"
-  packages = ["."]
+  digest = "1:ad9bac31f001ab730600bf9e80c4da7552cb9cb47c505f3fa0fe80de81682bbe"
+  name = "github.com/confluentinc/confluent-kafka-go"
+  packages = ["kafka"]
   pruneopts = "UT"
-  revision = "185fcae6c0959e2368bd0f9fc8b86f0746d8c826"
-  version = "v0.2.1"
+  revision = "460e8e43b282a1a68219df600ef63442b81faf5f"
+  version = "v0.11.6"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  input-imports = ["github.com/segmentio/kafka-go"]
+  input-imports = ["github.com/confluentinc/confluent-kafka-go/kafka"]
   solver-name = "gps-cdcl"
   solver-version = 1
