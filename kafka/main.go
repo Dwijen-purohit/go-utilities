@@ -51,7 +51,7 @@ func write2() {
 	// Optional delivery channel, if not specified the Producer object's
 	// .Events channel is used.
 	deliveryChan := make(chan kafka.Event)
-	for i := 0; i < messageCount; i++ {
+	for i := 0; i < *messageCount; i++ {
 		st := time.Now()
 
 		value := fmt.Sprintf("message-%d", i)
