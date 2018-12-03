@@ -67,7 +67,7 @@ func write2() {
 			*m.TopicPartition.Topic, m.TopicPartition.Partition, m.TopicPartition.Offset)
 	}
 
-	meta, err := p.GetMetadata(topic)
+	meta, err := p.GetMetadata(topic, false, 0)
 	if err != nil {
 		fmt.Printf("META ERR - %+v", err)
 	}
