@@ -58,12 +58,18 @@ func write(id string, msgCount int, wg *sync.WaitGroup) {
 
 	for i := 0; i < msgCount; i++ {
 		tStart := time.Now()
-		w.WriteMessages(context.Background(), kg.Message{
+		err := w.WriteMessages(context.Background(), kg.Message{
 			Key:   []byte(id),
 			Value: []byte(fmt.Sprintf("message-%s-%d", id, i)),
 		})
+		if err != nil {
+			fmt.Println("Err - - - -", err)
+		}
 
-		duration := time.Now().Sub(tStart)
-		fmt.Printf("Time taken per write message | Writer: %s | Duration: %s \n", id, duration.String())
+		d := time.Now().Sub(tStart)
+		fmt.Printf("Time taken per write message | Writer: %s | Duration: %s \n", id, d.String())
+		stats := w.Stats()
+		fmt.Printf("DialTime: %v | WriteTime: %v | WaitTime: %v | Retries: %+v | BatchSize: %+v \n", stats.DialTime.Avg.String(), stats.WriteTime.Avg.String(), stats.WaitTime.Avg.String(), stats.Retries, stats.BatchSize)
+		fmt.Printf("RequiredAcks: %v \n", stats.RequiredAcks)
 	}
 }
