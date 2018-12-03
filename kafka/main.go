@@ -33,7 +33,7 @@ func init() {
 }
 
 func main() {
-	fmt.Printf("Opts = concurrency: %d | message-count: %d | topic: %s | brokers: %s", *concurrency, *messageCount, *topic, *brokers)
+	fmt.Printf("Opts = concurrency: %d | message-count: %d | topic: %s | brokers: %s \n", *concurrency, *messageCount, *topic, *brokers)
 
 	msgPerWriter := *messageCount / *concurrency
 	wg := sync.WaitGroup{}
@@ -66,10 +66,9 @@ func write(id string, msgCount int, wg *sync.WaitGroup) {
 			fmt.Println("Err - - - -", err)
 		}
 
-		d := time.Now().Sub(tStart)
-		fmt.Printf("Time taken per write message | Writer: %s | Duration: %s \n", id, d.String())
+		//	d := time.Now().Sub(tStart)
+		//	fmt.Printf("Time taken per write message | Writer: %s | Duration: %s \n", id, d.String())
 		stats := w.Stats()
-		fmt.Printf("DialTime: %v | WriteTime: %v | WaitTime: %v | Retries: %+v | BatchSize: %+v \n", stats.DialTime.Avg.String(), stats.WriteTime.Avg.String(), stats.WaitTime.Avg.String(), stats.Retries, stats.BatchSize)
-		fmt.Printf("RequiredAcks: %v \n", stats.RequiredAcks)
+		fmt.Printf("DialTime: %v | WriteTime: %v | WaitTime: %v | Writer: %s \n", stats.DialTime.Avg.String(), stats.WriteTime.Avg.String(), stats.WaitTime.Avg.String(), id)
 	}
 }
