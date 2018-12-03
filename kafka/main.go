@@ -12,6 +12,7 @@ import (
 
 var (
 	ack          *int
+	batchSize    *int
 	concurrency  *int
 	messageCount *int
 	topic        *string
@@ -21,6 +22,7 @@ var (
 
 func init() {
 	ack = flag.Int("ack", -1, "required acknowledgement default is -1")
+	batchSize = flag.Int("batch-size", 1, "required acknowledgement default is -1")
 	concurrency = flag.Int("concurrency", 4, "number of concurrent requests")
 	messageCount = flag.Int("message-count", 100, "number of messages")
 	topic = flag.String("topic", "", "topic to test")
@@ -56,17 +58,21 @@ func write(id string, msgCount int, wg *sync.WaitGroup) {
 	defer w.Close()
 
 	for i := 0; i < msgCount; i++ {
-		//		tStart := time.Now()
-		err := w.WriteMessages(context.Background(), kg.Message{
-			Key:   []byte(id),
-			Value: []byte(fmt.Sprintf("message-%s-%d", id, i)),
-		})
+		group := []kg.Message{}
+		if len(group) < *batchSize {
+			group = append(group, kg.Message{
+				Key:   []byte(id),
+				Value: []byte(fmt.Sprintf("message-%s-%d", id, i)),
+			})
+
+			continue
+		}
+
+		err := w.WriteMessages(context.Background(), group...)
 		if err != nil {
 			fmt.Println("Err - - - -", err)
 		}
 
-		//	d := time.Now().Sub(tStart)
-		//	fmt.Printf("Time taken per write message | Writer: %s | Duration: %s \n", id, d.String())
 		stats := w.Stats()
 		fmt.Printf("DialTime: %v | WriteTime: %v | WaitTime: %v | Writer: %s \n", stats.DialTime.Avg.String(), stats.WriteTime.Avg.String(), stats.WaitTime.Avg.String(), id)
 	}
