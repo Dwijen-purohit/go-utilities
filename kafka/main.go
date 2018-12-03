@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"strings"
+	"time"
 
 	// kg "github.com/segmentio/kafka-go"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
@@ -50,30 +51,29 @@ func write2() {
 	// Optional delivery channel, if not specified the Producer object's
 	// .Events channel is used.
 	deliveryChan := make(chan kafka.Event)
+	for i := 0; i < messageCount; i++ {
+		st := time.Now()
 
-	value := "Hello world"
-	err = p.Produce(&kafka.Message{
-		TopicPartition: kafka.TopicPartition{Topic: topic, Partition: kafka.PartitionAny},
-		Value:          []byte(value),
-		Headers:        []kafka.Header{{Key: "myTestHeader", Value: []byte("header values are binary")}},
-	}, deliveryChan)
+		value := fmt.Sprintf("message-%d", i)
+		err = p.Produce(&kafka.Message{
+			TopicPartition: kafka.TopicPartition{Topic: topic, Partition: kafka.PartitionAny},
+			Value:          []byte(value),
+			Headers:        []kafka.Header{{Key: "myTestHeader", Value: []byte("header values are binary")}},
+		}, deliveryChan)
 
-	e := <-deliveryChan
-	m := e.(*kafka.Message)
+		e := <-deliveryChan
+		m := e.(*kafka.Message)
+		et := time.Since(st).Seconds()
 
-	if m.TopicPartition.Error != nil {
-		fmt.Printf("Delivery failed: %v\n", m.TopicPartition.Error)
-	} else {
-		fmt.Printf("Delivered message to topic %s [%d] at offset %v\n",
-			*m.TopicPartition.Topic, m.TopicPartition.Partition, m.TopicPartition.Offset)
+		if m.TopicPartition.Error != nil {
+			fmt.Printf("Delivery failed: %v\n", m.TopicPartition.Error)
+		} else {
+			fmt.Printf("Delivered message to topic %s [%d] at offset %v\n",
+				*m.TopicPartition.Topic, m.TopicPartition.Partition, m.TopicPartition.Offset)
+		}
+
+		fmt.Println("Time taken: ", et)
 	}
-
-	meta, err := p.GetMetadata(topic, false, 0)
-	if err != nil {
-		fmt.Printf("META ERR - %+v", err)
-	}
-
-	fmt.Printf("METADATA - %+v", meta)
 
 	close(deliveryChan)
 }
